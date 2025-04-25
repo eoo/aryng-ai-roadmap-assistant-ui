@@ -81,19 +81,3 @@ function Form({ onSuccess }) {
 }
 
 export default Form;
-{/*
-  <form className="form-container" onSubmit={handleSubmit}>
-      
-      {['firstName', 'lastName', 'email', 'companyName', 'industry', 'jobTitle'].map((field) => (
-        <input key={field} name={field} placeholder={field} onChange={handleChange} required />
-      ))}
-      <select name="companySize" onChange={handleChange} required>
-        <option value="">Company Size</option>
-        <option value="1-10">1-10</option>
-        <option value="11-50">11-50</option>
-        <option value="51-200">51-200</option>
-        <option value="200+">200+</option>
-      </select>
-      <button type="submit">Start Chat</button>
-    </form>
- */}

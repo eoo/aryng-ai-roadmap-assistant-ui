@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import './Chat.css';
 import ReactMarkdown from 'react-markdown';
 import { useAuth } from '../providers/AuthProvider';
@@ -8,6 +8,8 @@ function Chat({ email }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [reset, setReset] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const bottomRef = useRef(null);
 
   const sendMessage = async (e) => {
     e.preventDefault();
@@ -17,15 +19,24 @@ function Chat({ email }) {
     setMessages(newMessages);
     setInput('');
     setReset(false);
-    
+    setIsLoading(true);
     console.log(newMessages)
-    const res = await fetch(`${baseUrl}/chat`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, message: input, reset })
-    });
-    const data = await res.json();
-    setMessages([...newMessages, { role: 'assistant', content: data.reply }]);
+    try {
+      const res = await fetch(`${baseUrl}/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, message: input, reset })
+      });
+      const data = await res.json();
+      setMessages([...newMessages, { role: 'assistant', content: data.reply }]);
+    } catch (error) {
+      console.error('Error fetching data', error);
+    } finally {
+      setIsLoading(false);
+      setTimeout(() => {
+        bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 100); 
+    }
   };
 
   const handleReset = () => {
@@ -37,13 +48,13 @@ function Chat({ email }) {
 
   return (
     <div className="chat-container flex flex-col h-screen p-4 bg-gray-50">
-        <button onClick={() => auth.logout()}>Logout</button>
+        <button onClick={() => auth.logout()} className="bg-red-700 text-white px-4 py-2 rounded hover:bg-red-500 ml-auto">Logout</button>
       <div className="flex-1 overflow-y-auto space-y-4 mb-4">
         {messages.map((msg, index) => (
           <div
             key={index}
             className={`p-3 rounded-lg max-w-2xl ${
-              msg.role === 'user' ? 'bg-[#019aa8] text-white self-end' : 'bg-white text-black self-start border'
+              msg.role === 'user' ? 'bg-[#019aa8] text-white self-end ml-auto m-5' : 'bg-white text-black self-start border'
             }`}
           >
             {msg.role === 'assistant' ? (
@@ -53,8 +64,12 @@ function Chat({ email }) {
             )}
           </div>
         ))}
+
+        <div ref={bottomRef} />
       </div>
-  
+      
+      {isLoading && <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-[#019aa8] m-auto mb-10"></div>}
+
       <div className="flex gap-2">
         <input
           type="text"
@@ -67,7 +82,7 @@ function Chat({ email }) {
         <button onClick={sendMessage} className="bg-[#be266a] text-white px-4 py-2 rounded hover:bg-[#9c1e56]">
           Send
         </button>
-        <button onClick={handleReset} className="bg-red-700 px-4 py-2 rounded hover:bg-red-500">
+        <button onClick={handleReset} className="bg-red-700 text-white px-4 py-2 rounded hover:bg-red-500">
           Reset
         </button>
       </div>
@@ -76,24 +91,3 @@ function Chat({ email }) {
 }
 
 export default Chat;
-
-{
-  /**
-   *   return (
-    <div className="chat-container">
-      <div className="messages">
-        {messages.map((msg, i) => (
-          <div key={i} className={`message ${msg.role}`}>{msg.content}</div>
-        ))}
-      </div>
-      <form onSubmit={sendMessage}>
-        <input value={input} onChange={(e) => setInput(e.target.value)} placeholder="Type your message..." />
-        <button type="submit">Send</button>
-        <button onClick={handleReset} className="reset-button">Reset Conversation</button>
-      </form>
-    </div>
-  );
-   */
-
-   {/*onKeyDown={e => e.key === 'Enter' && sendMessage()}*/} 
-}
