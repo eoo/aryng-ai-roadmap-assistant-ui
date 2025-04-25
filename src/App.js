@@ -1,19 +1,22 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Form from './components/Form';
-import Chat from './components/Chat';
+import { useAuth } from './providers/AuthProvider'
+import { useNavigate, Navigate } from 'react-router'
 
 function App() {
-  const [userEmail, setUserEmail] = useState('');
-  const [formSubmitted, setFormSubmitted] = useState(false);
+  const auth = useAuth()
+  const navigate = useNavigate()
 
   const handleFormSuccess = (email) => {
-    setUserEmail(email);
-    setFormSubmitted(true);
+    navigate("/chat")
+    auth.loginAction(email)
   };
+
+  if (auth.email) return <Navigate to="/chat" />;
 
   return (
     <div className="app-container">
-      {formSubmitted ? <Chat email={userEmail} /> : <Form onSuccess={handleFormSuccess} />}
+      <Form onSuccess={handleFormSuccess} />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './Chat.css';
 import ReactMarkdown from 'react-markdown';
+import { useAuth } from '../providers/AuthProvider';
 const baseUrl = process.env.REACT_APP_API_BASE_URL;
 
 function Chat({ email }) {
@@ -32,8 +33,11 @@ function Chat({ email }) {
     setReset(true);
   };
 
+  const auth = useAuth()
+
   return (
     <div className="chat-container flex flex-col h-screen p-4 bg-gray-50">
+        <button onClick={() => auth.logout()}>Logout</button>
       <div className="flex-1 overflow-y-auto space-y-4 mb-4">
         {messages.map((msg, index) => (
           <div
